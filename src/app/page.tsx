@@ -35,7 +35,7 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="landing-hero">
         <span className="hero-badge">🔒 Secure DeFi Auditor</span>
-        <h1>Understand Your Web3 Finances In Plain English</h1>
+        <h1>Understand Your <span style={{ color: 'var(--color-accent)' }}>Web3 Finances</span> In Plain English</h1>
         <p>
           OKX.AI Copilot aggregates your multi-chain wallets, auto-categorizes on-chain activities, monitors recurring developer subscriptions, and shields your capital by flagging drainer contracts.
         </p>
@@ -79,7 +79,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '16px' }}>
+            <div style={{ border: '1px solid rgba(204, 255, 0, 0.3)', backgroundColor: 'rgba(204, 255, 0, 0.05)', borderRadius: '8px', padding: '16px' }}>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ fontSize: '18px' }}>✨</span>
                 <span style={{ fontWeight: 700, fontSize: '13px' }}>OKX.AI Audit Note</span>
@@ -93,7 +93,7 @@ export default function LandingPage() {
       </section>
 
       {/* Feature Grid Section */}
-      <section style={{ backgroundColor: 'var(--bg-primary)', padding: '60px 40px' }} id="security">
+      <section style={{ backgroundColor: '#F9F9FB', borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)', padding: '60px 40px' }} id="security">
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <h2 style={{ fontSize: '28px', fontWeight: 700, textAlign: 'center', marginBottom: '40px' }}>
             Built for Serious Web3 Operators

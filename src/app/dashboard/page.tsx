@@ -2,8 +2,22 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { useApp } from '../../context/AppContext';
+import { useApp, getChainInfo } from '../../context/AppContext';
 import { PortfolioTrendChart, CategorySpendChart, InflowOutflowComparison } from '../../components/Charts';
+
+const getExplorerName = (chainId: number | null) => {
+  switch (chainId) {
+    case 56: return 'BSCscan';
+    case 137: return 'Polygonscan';
+    case 42161: return 'Arbiscan';
+    case 10: return 'Optimistic Etherscan';
+    case 8453: return 'Basescan';
+    case 66: return 'OKX Explorer';
+    case 1:
+    default:
+      return 'Etherscan';
+  }
+};
 
 export default function Dashboard() {
   const {
@@ -58,7 +72,7 @@ export default function Dashboard() {
           </div>
           {liveGasPrice !== null && (
             <span className="badge" style={{
-              backgroundColor: '#F1F5F9', color: 'var(--text-primary)',
+              backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)',
               border: '1px solid var(--border-color)', padding: '8px 12px',
               fontWeight: 600, fontSize: '12.5px', borderRadius: 'var(--radius-sm)'
             }}>
@@ -74,10 +88,17 @@ export default function Dashboard() {
         }}>
           <div style={{
             textAlign: 'center', maxWidth: '480px',
-            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+            background: 'linear-gradient(135deg, #09090b 0%, #000000 100%)',
             border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px',
-            padding: '56px 48px', boxShadow: '0 24px 64px rgba(0,0,0,0.4)'
+            padding: '56px 48px', boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
+            position: 'relative', overflow: 'hidden'
           }}>
+            <div style={{
+              position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)',
+              width: '160px', height: '160px', borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(204, 255, 0, 0.12) 0%, rgba(204, 255, 0, 0) 70%)',
+              pointerEvents: 'none'
+            }} />
             <div style={{ fontSize: '56px', marginBottom: '20px' }}>🔗</div>
             <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#F8FAFC', marginBottom: '12px' }}>
               No Wallet Connected
@@ -98,13 +119,14 @@ export default function Dashboard() {
               onClick={connectWeb3}
               disabled={web3State.isConnecting}
               style={{
-                background: 'linear-gradient(135deg, #3B82F6, #2563EB)',
-                color: 'white', border: 'none', borderRadius: '12px',
+                background: 'var(--color-accent)',
+                color: '#000000', border: 'none', borderRadius: '12px',
                 padding: '14px 32px', fontSize: '15px', fontWeight: 700,
                 cursor: web3State.isConnecting ? 'not-allowed' : 'pointer',
                 opacity: web3State.isConnecting ? 0.7 : 1,
                 width: '100%', marginBottom: '12px',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                boxShadow: '0 4px 20px rgba(204, 255, 0, 0.2)'
               }}
             >
               {web3State.isConnecting ? '⏳ Connecting...' : '⚡ Connect Wallet'}
@@ -134,7 +156,7 @@ export default function Dashboard() {
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           {liveGasPrice !== null && (
             <span className="badge" style={{
-              backgroundColor: '#F1F5F9', color: 'var(--text-primary)',
+              backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)',
               border: '1px solid var(--border-color)', padding: '8px 12px',
               fontWeight: 600, fontSize: '12.5px', borderRadius: 'var(--radius-sm)'
             }}>
@@ -145,7 +167,7 @@ export default function Dashboard() {
             padding: '8px 12px', fontSize: '12.5px', borderRadius: 'var(--radius-sm)',
             fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px'
           }}>
-            <span style={{ width: '8px', height: '8px', backgroundColor: '#10B981', borderRadius: '50%' }} />
+            <span style={{ width: '8px', height: '8px', backgroundColor: 'var(--color-success)', borderRadius: '50%' }} />
             <span suppressHydrationWarning>
               {web3State.address?.substring(0, 6)}...{web3State.address?.substring(web3State.address.length - 4)}
             </span>
@@ -168,7 +190,7 @@ export default function Dashboard() {
             ${portfolioStats.totalValueUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </span>
           <span className="metric-change" style={{ color: 'var(--text-secondary)' }}>
-            {web3State.balanceEth.toFixed(6)} ETH
+            {web3State.balanceEth.toFixed(6)} {getChainInfo(web3State.chainId).symbol}
           </span>
         </div>
 
@@ -176,7 +198,7 @@ export default function Dashboard() {
           <span className="metric-label">Transactions Loaded</span>
           <span className="metric-value">{transactions.length}</span>
           <span className="metric-change" style={{ color: 'var(--text-secondary)' }}>
-            {isLoadingTxs ? '⏳ Syncing...' : 'From Etherscan'}
+            {isLoadingTxs ? '⏳ Syncing...' : `From ${getExplorerName(web3State.chainId)}`}
           </span>
         </div>
 
@@ -211,7 +233,7 @@ export default function Dashboard() {
             <div className="card-header">
               <div>
                 <h3 className="card-title">Portfolio Balance</h3>
-                <p className="card-subtitle">Estimated value based on live ETH price</p>
+                <p className="card-subtitle">Estimated value based on live {getChainInfo(web3State.chainId).symbol} price</p>
               </div>
               <span className="badge badge-success">Live</span>
             </div>
@@ -228,7 +250,7 @@ export default function Dashboard() {
             <div className="card-header">
               <div>
                 <h3 className="card-title">Recent On-Chain Activity</h3>
-                <p className="card-subtitle">Latest transactions from Etherscan</p>
+                <p className="card-subtitle">Latest transactions from {getExplorerName(web3State.chainId)}</p>
               </div>
               <Link href="/transactions" style={{ fontSize: '13px', fontWeight: 600 }}>
                 View All ↗
@@ -237,14 +259,14 @@ export default function Dashboard() {
             {isLoadingTxs ? (
               <div className="empty-state" style={{ padding: '32px 0' }}>
                 <div style={{ fontSize: '32px', marginBottom: '12px' }}>⏳</div>
-                <div>Loading transactions from Etherscan...</div>
+                <div>Loading transactions from {getExplorerName(web3State.chainId)}...</div>
               </div>
             ) : recentTransactions.length === 0 ? (
               <div className="empty-state" style={{ padding: '32px 0' }}>
                 <div style={{ fontSize: '32px', marginBottom: '12px' }}>📭</div>
                 <div>No transactions found for this address</div>
                 <div style={{ fontSize: '12px', color: 'var(--text-light)', marginTop: '6px' }}>
-                  If you have transactions, add your Etherscan API key in Settings for higher rate limits
+                  If you have transactions, add your Block Explorer API key in Settings for higher rate limits
                 </div>
               </div>
             ) : (
@@ -293,7 +315,7 @@ export default function Dashboard() {
         <div className="col-4" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
           {/* Wallet Info Card */}
-          <div className="card" style={{ borderColor: 'var(--color-accent)', backgroundColor: '#F8FAFC' }}>
+          <div className="card" style={{ borderColor: 'var(--color-accent)', backgroundColor: 'rgba(204, 255, 0, 0.02)' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
               <span style={{ fontSize: '20px' }}>🔗</span>
               <h3 className="card-title" style={{ margin: 0 }}>Connected Wallet</h3>
@@ -313,13 +335,15 @@ export default function Dashboard() {
                    web3State.chainId === 56 ? 'BNB Chain' :
                    web3State.chainId === 10 ? 'Optimism' :
                    web3State.chainId === 42161 ? 'Arbitrum' :
+                   web3State.chainId === 8453 ? 'Base' :
+                   web3State.chainId === 66 ? 'OKX Chain' :
                    `Chain ID: ${web3State.chainId}`}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Balance</span>
-                <span style={{ fontWeight: 700, color: 'var(--color-accent)' }}>
-                  {web3State.balanceEth.toFixed(6)} ETH
+                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                  {web3State.balanceEth.toFixed(6)} {getChainInfo(web3State.chainId).symbol}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -348,7 +372,7 @@ export default function Dashboard() {
 
           {/* Active Alerts */}
           {activeAlerts.length > 0 && (
-            <div className="card" style={{ borderColor: 'var(--color-danger)', backgroundColor: '#FEF2F2' }}>
+            <div className="card" style={{ borderColor: 'var(--color-danger)', backgroundColor: 'var(--color-danger-light)' }}>
               <div className="card-header" style={{ marginBottom: '12px' }}>
                 <h3 className="card-title" style={{ color: 'var(--color-danger)' }}>
                   ⚠️ Security Alerts ({activeAlerts.length})

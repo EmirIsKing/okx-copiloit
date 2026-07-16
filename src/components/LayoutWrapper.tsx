@@ -18,7 +18,7 @@ export const LayoutWrapper: React.FC<LayoutWrapperProps> = ({ children }) => {
   if (isLandingPage) {
     return (
       <AppProvider>
-        <main className="landing-layout-root" style={{ minHeight: '100vh', width: '100%', backgroundColor: '#FFFFFF' }}>
+        <main className="landing-layout-root" style={{ minHeight: '100vh', width: '100%', backgroundColor: 'var(--bg-primary)' }}>
           {children}
         </main>
       </AppProvider>

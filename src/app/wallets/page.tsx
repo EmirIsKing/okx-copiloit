@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp, getExplorerUrl } from '../../context/AppContext';
 import { Wallet } from '../../data/mockData';
 
 export default function WalletsPage() {
@@ -85,7 +85,7 @@ export default function WalletsPage() {
         style={{
           marginBottom: '24px',
           borderColor: web3State.isConnected ? 'var(--color-success)' : 'var(--border-color)',
-          background: 'linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%)',
+          background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
           padding: '20px 24px'
         }}
       >
@@ -271,7 +271,7 @@ export default function WalletsPage() {
                     </button>
                   )}
                   <a
-                    href={`https://etherscan.io/address/${wallet.address}`}
+                    href={`${getExplorerUrl(wallet.chain)}/address/${wallet.address}`}
                     target="_blank"
                     rel="noreferrer"
                     className="btn btn-outline btn-sm"

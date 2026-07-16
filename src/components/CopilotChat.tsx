@@ -45,7 +45,7 @@ export const CopilotChat: React.FC = () => {
       const parts = content.split('**');
       const formatted = parts.map((part, i) => {
         if (i % 2 === 1) {
-          return <strong key={i} style={{ color: '#0B192C' }}>{part}</strong>;
+          return <strong key={i} style={{ color: 'var(--text-primary)' }}>{part}</strong>;
         }
         // Handle inline code formatting like `0xbc9...ff12`
         if (part.includes('`')) {

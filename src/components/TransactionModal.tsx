@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useApp } from '../context/AppContext';
+import { useApp, getExplorerUrl } from '../context/AppContext';
 import { Transaction } from '../data/mockData';
 
 export const TransactionModal: React.FC = () => {
@@ -109,7 +109,7 @@ export const TransactionModal: React.FC = () => {
             </div>
             <div className="modal-stat-card">
               <span className="stat-label">Crypto Quantity</span>
-              <span className="stat-value text-dark">
+              <span className="stat-value">
                 {transaction.amountCrypto} {transaction.cryptoSymbol}
               </span>
             </div>
@@ -212,7 +212,7 @@ export const TransactionModal: React.FC = () => {
                 )}
                 
                 <a
-                  href={`https://etherscan.io/tx/${transaction.hash}`}
+                  href={`${getExplorerUrl(wallet?.chain)}/tx/${transaction.id.startsWith('0x') ? transaction.id : transaction.hash}`}
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-outline"

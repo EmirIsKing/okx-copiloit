@@ -88,7 +88,7 @@ interface AppContextType {
   isLoadingTxs: boolean;
 }
 
-interface ChainInfo {
+export interface ChainInfo {
   name: string;
   symbol: string;
   rpcUrl: string;
@@ -96,7 +96,21 @@ interface ChainInfo {
   color: string;
 }
 
-const getChainInfo = (chainId: number | null): ChainInfo => {
+export const getExplorerUrl = (chainName?: string): string => {
+  switch (chainName) {
+    case 'BNB Chain': return 'https://bscscan.com';
+    case 'Polygon': return 'https://polygonscan.com';
+    case 'Arbitrum': return 'https://arbiscan.io';
+    case 'Optimism': return 'https://optimistic.etherscan.io';
+    case 'Base': return 'https://basescan.org';
+    case 'OKX Chain': return 'https://www.oklink.com/oktc';
+    case 'Ethereum':
+    default:
+      return 'https://etherscan.io';
+  }
+};
+
+export const getChainInfo = (chainId: number | null): ChainInfo => {
   switch (chainId) {
     case 1:
       return {
@@ -226,15 +240,15 @@ async function fetchGasPrice(rpcUrl: string): Promise<number> {
 }
 
 // Etherscan transactions — routed through our server-side proxy (key never hits the browser)
-async function fetchTransactionsFromEtherscan(address: string, _fallbackKey?: string): Promise<any[]> {
+async function fetchTransactionsFromEtherscan(address: string, chainId: number | null, fallbackKey?: string): Promise<any[]> {
   try {
-    const res = await fetch(`/api/etherscan?address=${address}`);
+    const res = await fetch(`/api/etherscan?address=${address}&chainId=${chainId || 1}&apiKey=${fallbackKey || ''}`);
     const json = await res.json();
     if (json.status === '1' && Array.isArray(json.result)) {
       return json.result;
     }
   } catch (err) {
-    console.error('Error fetching Etherscan transactions:', err);
+    console.error('Error fetching transactions:', err);
   }
   return [];
 }
@@ -371,7 +385,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => clearInterval(interval);
   }, [web3State.isConnected, web3State.address, settings.alchemyUrl]);
 
-  // 4. Fetch real connected transactions from Etherscan
+  // 4. Fetch real connected transactions from explorer API
   useEffect(() => {
     if (!web3State.isConnected || !web3State.address) {
       setRealTransactions([]);
@@ -380,15 +394,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const loadTxs = async () => {
       setIsLoadingTxs(true);
-      const txs = await fetchTransactionsFromEtherscan(web3State.address!);
+      const txs = await fetchTransactionsFromEtherscan(web3State.address!, web3State.chainId, settings.etherscanKey);
       if (txs.length > 0) {
+        const chainInfo = getChainInfo(web3State.chainId);
+        let price = 3100; // default for ETH-based chains
+        if (chainInfo.symbol === 'OKB') price = 52;
+        if (chainInfo.symbol === 'BNB') price = 600;
+        if (chainInfo.symbol === 'POL') price = 0.55;
+
         const mapped = txs.map((tx: any) => {
           const isOutflow = tx.from.toLowerCase() === web3State.address!.toLowerCase();
           const valueEth = parseFloat(tx.value) / 1e18;
-          const amountUsd = valueEth * 3100;
+          const amountUsd = valueEth * price;
           const gasPriceGwei = parseInt(tx.gasPrice) / 1e9;
           const gasUsed = parseInt(tx.gasUsed);
-          const gasFeeUsd = (gasUsed * parseInt(tx.gasPrice) / 1e18) * 3100;
+          const gasFeeUsd = (gasUsed * parseInt(tx.gasPrice) / 1e18) * price;
 
           let category: Transaction['category'] = 'Other';
           let desc = 'Contract Interaction';
@@ -413,24 +433,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             type: isOutflow ? 'outflow' : 'inflow',
             amountUsd: category === 'Gas Fees' ? gasFeeUsd : amountUsd,
             amountCrypto: valueEth,
-            cryptoSymbol: 'ETH',
+            cryptoSymbol: chainInfo.symbol,
             walletId: 'w-connected',
             status: tx.isError === '0' ? 'Completed' : 'Flagged',
             isRecurring: false,
             riskLevel: gasPriceGwei > settings.gasThreshold ? 'Medium' : amountUsd >= settings.largeTransferLimit ? 'Low' : 'None',
             tags: tx.input !== '0x' ? ['Contract Call'] : ['Transfer'],
-            explanation: `On-chain transaction processed on Ethereum. Gas paid was ${gasPriceGwei.toFixed(0)} Gwei. Total gas fee spent: $${gasFeeUsd.toFixed(2)}.`,
+            explanation: `On-chain transaction processed on ${chainInfo.name}. Gas paid was ${gasPriceGwei.toFixed(0)} Gwei. Total gas fee spent: $${gasFeeUsd.toFixed(2)}.`,
             recommendedAction: gasPriceGwei > settings.gasThreshold ? 'Gas fee was abnormally high. Consider deploying transactions during lower-congestion windows.' : undefined,
             gasGwei: gasPriceGwei
           } as Transaction;
         });
         setRealTransactions(mapped);
+      } else {
+        setRealTransactions([]);
       }
       setIsLoadingTxs(false);
     };
 
     loadTxs();
-  }, [web3State.isConnected, web3State.address, settings.etherscanKey, settings.gasThreshold, settings.largeTransferLimit]);
+  }, [web3State.isConnected, web3State.address, web3State.chainId, settings.etherscanKey, settings.gasThreshold, settings.largeTransferLimit]);
 
   // 5. Connect Browser Wallet (OKX / MetaMask / EIP-1193)
   const connectWeb3 = async () => {
@@ -752,16 +774,17 @@ ${combinedAlerts.filter(a => !a.isAcknowledged).slice(0, 3).map(a => `- [${a.sev
   });
 
   useEffect(() => {
+    const chainInfo = getChainInfo(web3State.chainId);
     const connectedWalletObj: Wallet | null = web3State.isConnected && web3State.address
       ? {
           id: 'w-connected',
-          name: 'OKX Connected Wallet',
-          chain: web3State.chainId === 1 ? 'Ethereum' : 'OKX Chain',
+          name: `${chainInfo.name} Wallet`,
+          chain: chainInfo.chainType,
           address: `${web3State.address.substring(0, 6)}...${web3State.address.substring(web3State.address.length - 4)}`,
           balanceUsd: web3State.balanceUsd,
           balanceCrypto: web3State.balanceEth,
-          symbol: web3State.chainId === 1 ? 'ETH' : 'OKB',
-          color: '#2563EB',
+          symbol: chainInfo.symbol,
+          color: chainInfo.color,
           performance24h: 1.82,
           status: 'connected',
         }

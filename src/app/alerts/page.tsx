@@ -101,7 +101,7 @@ export default function AlertsPage() {
                       </span>
                     </div>
 
-                    <p style={{ fontSize: '13.5px', color: '#334155', marginTop: '14px', lineHeight: 1.5 }}>
+                    <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', marginTop: '14px', lineHeight: 1.5 }}>
                       {alert.description}
                     </p>
 

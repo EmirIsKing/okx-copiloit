@@ -227,7 +227,7 @@ export default function InsightsPage() {
                     </span>
                   </div>
 
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#334155', marginTop: '16px', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '16px', lineHeight: 1.5 }}>
                     {insight.summary}
                   </p>
 

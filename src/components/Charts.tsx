@@ -16,7 +16,7 @@ interface LineChartProps {
 export const PortfolioTrendChart: React.FC<LineChartProps> = ({
   data,
   labels,
-  color = '#2563EB',
+  color = 'var(--color-accent)',
   height = 160,
 }) => {
   if (data.length === 0) return null;
@@ -118,7 +118,7 @@ export const PortfolioTrendChart: React.FC<LineChartProps> = ({
                   cx={pt.x}
                   cy={pt.y}
                   r={6}
-                  fill="#FFFFFF"
+                  fill="var(--bg-secondary)"
                   stroke={color}
                   strokeWidth={2}
                 />
@@ -141,7 +141,7 @@ export const PortfolioTrendChart: React.FC<LineChartProps> = ({
           display: 'flex',
           justifyContent: 'space-between',
           fontSize: '11px',
-          color: '#94A3B8',
+          color: 'var(--text-light)',
           marginTop: '6px',
           padding: '0 4px',
           fontFamily: 'var(--font-sans)',
@@ -180,19 +180,19 @@ export const CategorySpendChart: React.FC<CategorySpendProps> = ({ transactions 
 
   const getCategoryColor = (cat: string) => {
     switch (cat) {
-      case 'Trading': return '#2563EB'; // Blue
-      case 'Gas Fees': return '#F59E0B'; // Amber
-      case 'Subscriptions': return '#8B5CF6'; // Purple
-      case 'Security Risk': return '#EF4444'; // Red
-      case 'Food & Ent': return '#EC4899'; // Pink
-      case 'Transfers': return '#64748B'; // Slate
-      default: return '#94A3B8';
+      case 'Trading': return 'var(--color-accent)'; // Lemon green
+      case 'Gas Fees': return '#f59e0b'; // Amber
+      case 'Subscriptions': return '#8b5cf6'; // Purple
+      case 'Security Risk': return '#ef4444'; // Red
+      case 'Food & Ent': return '#ec4899'; // Pink
+      case 'Transfers': return '#71717a'; // Zinc grey
+      default: return '#a1a1aa';
     }
   };
 
   if (sortedCategories.length === 0) {
     return (
-      <div style={{ color: '#64748B', fontSize: '14px', textAlign: 'center', padding: '24px 0' }}>
+      <div style={{ color: 'var(--text-secondary)', fontSize: '14px', textAlign: 'center', padding: '24px 0' }}>
         No outflows recorded this cycle.
       </div>
     );
@@ -207,16 +207,16 @@ export const CategorySpendChart: React.FC<CategorySpendProps> = ({ transactions 
         return (
           <div key={cat.name} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-              <span style={{ fontWeight: 500, color: '#0B192C' }}>{cat.name}</span>
-              <span style={{ color: '#64748B' }}>
+              <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{cat.name}</span>
+              <span style={{ color: 'var(--text-secondary)' }}>
                 ${cat.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                <span style={{ fontSize: '11px', color: '#94A3B8', marginLeft: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-light)', marginLeft: '6px' }}>
                   ({percentage.toFixed(0)}%)
                 </span>
               </span>
             </div>
             {/* Custom progress bar */}
-            <div style={{ height: '8px', width: '100%', backgroundColor: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ height: '8px', width: '100%', backgroundColor: 'rgba(0, 0, 0, 0.04)', borderRadius: '4px', overflow: 'hidden' }}>
               <div
                 style={{
                   height: '100%',
@@ -252,30 +252,30 @@ export const InflowOutflowComparison: React.FC<ComparisonProps> = ({ inflow, out
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10B981' }} />
-            <span style={{ fontSize: '13px', color: '#64748B' }}>Inflow</span>
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-success)' }} />
+            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Inflow</span>
           </div>
-          <span style={{ fontSize: '14px', fontWeight: 600, color: '#10B981' }}>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: '#10b981' }}>
             +${inflow.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>
-        <div style={{ height: '12px', width: '100%', backgroundColor: '#F1F5F9', borderRadius: '6px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${inflowPercent}%`, backgroundColor: '#10B981', borderRadius: '6px' }} />
+        <div style={{ height: '12px', width: '100%', backgroundColor: 'rgba(0, 0, 0, 0.04)', borderRadius: '6px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${inflowPercent}%`, backgroundColor: '#10b981', borderRadius: '6px' }} />
         </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#EF4444' }} />
-            <span style={{ fontSize: '13px', color: '#64748B' }}>Outflow</span>
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-danger)' }} />
+            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Outflow</span>
           </div>
-          <span style={{ fontSize: '14px', fontWeight: 600, color: '#EF4444' }}>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-danger)' }}>
             -${outflow.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>
-        <div style={{ height: '12px', width: '100%', backgroundColor: '#F1F5F9', borderRadius: '6px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${outflowPercent}%`, backgroundColor: '#EF4444', borderRadius: '6px' }} />
+        <div style={{ height: '12px', width: '100%', backgroundColor: 'rgba(0, 0, 0, 0.04)', borderRadius: '6px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${outflowPercent}%`, backgroundColor: 'var(--color-danger)', borderRadius: '6px' }} />
         </div>
       </div>
     </div>

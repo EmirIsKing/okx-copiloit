@@ -160,7 +160,7 @@ export default function SettingsPage() {
                   style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: '12.5px' }}
                 />
                 <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                  Used to index transactions of connected wallets. If empty, the app will request history from Etherscan without key parameters.
+                  Used to index transactions of connected wallets. If empty, the app will query the block explorer API of the connected network without API key parameters.
                 </span>
               </div>
 

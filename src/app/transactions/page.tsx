@@ -3,6 +3,20 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 
+const getExplorerName = (chainId: number | null) => {
+  switch (chainId) {
+    case 56: return 'BSCscan';
+    case 137: return 'Polygonscan';
+    case 42161: return 'Arbiscan';
+    case 10: return 'Optimistic Etherscan';
+    case 8453: return 'Basescan';
+    case 66: return 'OKX Explorer';
+    case 1:
+    default:
+      return 'Etherscan';
+  }
+};
+
 export default function TransactionsPage() {
   const {
     transactions,
@@ -244,7 +258,7 @@ export default function TransactionsPage() {
             <span className="empty-state-icon">🔗</span>
             <h3>No Wallet Connected</h3>
             <p style={{ marginTop: '8px', maxWidth: '360px', margin: '8px auto 16px' }}>
-              Connect your wallet to see your real on-chain transaction history indexed from Etherscan.
+              Connect your wallet to see your real on-chain transaction history indexed from your block explorer.
             </p>
             <button onClick={connectWeb3} disabled={web3State.isConnecting} className="btn btn-navy btn-sm">
               {web3State.isConnecting ? '⏳ Connecting...' : '⚡ Connect Wallet'}
@@ -254,7 +268,7 @@ export default function TransactionsPage() {
           <div className="empty-state" style={{ padding: '48px' }}>
             <span className="empty-state-icon">⏳</span>
             <h3>Loading Transactions...</h3>
-            <p style={{ marginTop: '8px' }}>Fetching your transaction history from Etherscan.</p>
+            <p style={{ marginTop: '8px' }}>Fetching your transaction history from {getExplorerName(web3State.chainId)}.</p>
           </div>
         ) : filteredTransactions.length === 0 ? (
           <div className="empty-state">
@@ -262,7 +276,7 @@ export default function TransactionsPage() {
             <h3>No Transactions Found</h3>
             <p style={{ marginTop: '8px', maxWidth: '360px', margin: '8px auto 16px' }}>
               {transactions.length === 0
-                ? 'No transactions were found for your wallet. If you have transactions, add your Etherscan API key in Settings for better results.'
+                ? `No transactions were found for your wallet. If you have transactions, add your block explorer API key in Settings for better results.`
                 : 'Your filters might be too restrictive. Try clearing search fields or widening balance parameters.'}
             </p>
             {transactions.length > 0 && (
