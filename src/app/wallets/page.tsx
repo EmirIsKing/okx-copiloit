@@ -46,6 +46,11 @@ export default function WalletsPage() {
       case 'Bitcoin': return '🪙';
       case 'Solana': return '⚡';
       case 'OKX Chain': return '⬛';
+      case 'Polygon': return '💜';
+      case 'BNB Chain': return '🟡';
+      case 'Arbitrum': return '🟦';
+      case 'Optimism': return '🔴';
+      case 'Base': return '🔵';
       default: return '⚓';
     }
   };

@@ -88,6 +88,83 @@ interface AppContextType {
   isLoadingTxs: boolean;
 }
 
+interface ChainInfo {
+  name: string;
+  symbol: string;
+  rpcUrl: string;
+  chainType: Wallet['chain'];
+  color: string;
+}
+
+const getChainInfo = (chainId: number | null): ChainInfo => {
+  switch (chainId) {
+    case 1:
+      return {
+        name: 'Ethereum',
+        symbol: 'ETH',
+        rpcUrl: 'https://eth-mainnet.g.alchemy.com/public',
+        chainType: 'Ethereum',
+        color: '#3C3C3D'
+      };
+    case 66:
+      return {
+        name: 'OKX Chain',
+        symbol: 'OKB',
+        rpcUrl: 'https://exchainrpc.okex.org',
+        chainType: 'OKX Chain',
+        color: '#2563EB'
+      };
+    case 137:
+      return {
+        name: 'Polygon',
+        symbol: 'POL',
+        rpcUrl: 'https://polygon-bor.publicnode.com',
+        chainType: 'Polygon',
+        color: '#7C3AED'
+      };
+    case 56:
+      return {
+        name: 'BNB Chain',
+        symbol: 'BNB',
+        rpcUrl: 'https://bsc-dataseed.binance.org',
+        chainType: 'BNB Chain',
+        color: '#F3BA2F'
+      };
+    case 42161:
+      return {
+        name: 'Arbitrum',
+        symbol: 'ETH',
+        rpcUrl: 'https://arb1.arbitrum.io/rpc',
+        chainType: 'Arbitrum',
+        color: '#28A0F0'
+      };
+    case 10:
+      return {
+        name: 'Optimism',
+        symbol: 'ETH',
+        rpcUrl: 'https://mainnet.optimism.io',
+        chainType: 'Optimism',
+        color: '#FF0420'
+      };
+    case 8453:
+      return {
+        name: 'Base',
+        symbol: 'ETH',
+        rpcUrl: 'https://mainnet.base.org',
+        chainType: 'Base',
+        color: '#0052FF'
+      };
+    default:
+      return {
+        name: 'Ethereum',
+        symbol: 'ETH',
+        rpcUrl: 'https://eth-mainnet.g.alchemy.com/public',
+        chainType: 'Ethereum',
+        color: '#3C3C3D'
+      };
+  }
+};
+
 const defaultFilters: TransactionFilters = {
   searchQuery: '',
   walletId: 'all',
@@ -148,14 +225,10 @@ async function fetchGasPrice(rpcUrl: string): Promise<number> {
   return 0;
 }
 
-// Explorer API helper to fetch transactions
-async function fetchTransactionsFromEtherscan(address: string, apiKey: string): Promise<any[]> {
+// Etherscan transactions — routed through our server-side proxy (key never hits the browser)
+async function fetchTransactionsFromEtherscan(address: string, _fallbackKey?: string): Promise<any[]> {
   try {
-    // Etherscan allows queries without API key at a low rate limit
-    const url = `https://api.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=20&sort=desc${
-      apiKey ? `&apikey=${apiKey}` : ''
-    }`;
-    const res = await fetch(url);
+    const res = await fetch(`/api/etherscan?address=${address}`);
     const json = await res.json();
     if (json.status === '1' && Array.isArray(json.result)) {
       return json.result;
@@ -260,7 +333,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // 2. Query Live Gas Price
   useEffect(() => {
     const getGas = async () => {
-      const rpc = settings.alchemyUrl || 'https://cloudflare-eth.com';
+      const rpc = settings.alchemyUrl || 'https://eth-mainnet.g.alchemy.com/public';
       const price = await fetchGasPrice(rpc);
       if (price > 0) {
         setLiveGasPrice(price);
@@ -276,9 +349,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!web3State.isConnected || !web3State.address) return;
 
     const getBalance = async () => {
-      const rpc = settings.alchemyUrl || 'https://cloudflare-eth.com';
+      const chainInfo = getChainInfo(web3State.chainId);
+      const rpc = settings.alchemyUrl || chainInfo.rpcUrl;
       const ethVal = await fetchEthBalance(web3State.address!, rpc);
-      const usdVal = ethVal * 3100; // Mock conversion
+      
+      let price = 3100; // default for ETH-based chains (Mainnet, Arbitrum, Optimism, Base)
+      if (chainInfo.symbol === 'OKB') price = 52;
+      if (chainInfo.symbol === 'BNB') price = 600;
+      if (chainInfo.symbol === 'POL') price = 0.55;
+      
+      const usdVal = ethVal * price;
       setWeb3State(prev => ({
         ...prev,
         balanceEth: ethVal,
@@ -300,9 +380,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const loadTxs = async () => {
       setIsLoadingTxs(true);
-      // Prefer .env key, fall back to settings
-      const etherscanKey = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY || settings.etherscanKey;
-      const txs = await fetchTransactionsFromEtherscan(web3State.address!, etherscanKey);
+      const txs = await fetchTransactionsFromEtherscan(web3State.address!);
       if (txs.length > 0) {
         const mapped = txs.map((tx: any) => {
           const isOutflow = tx.from.toLowerCase() === web3State.address!.toLowerCase();
@@ -578,11 +656,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     let responseText = '';
 
-    // Prefer .env key, fall back to user-entered key from Settings
-    const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || settings.geminiKey;
+    // Always route through our server proxy — it will return an error if GEMINI_API_KEY is not set server-side
+    const geminiKey = settings.geminiKey; // kept only for display in error hints; never sent to Gemini directly
 
-    if (!geminiKey) {
-      responseText = `I need a **Gemini API key** to respond intelligently. Please go to **Settings** and paste your key from [Google AI Studio](https://aistudio.google.com/app/apikey) into the "Gemini API Key" field, then save.`;
+    if (false) {
+      // dead branch — key check is now handled by the server proxy route
+      responseText = '';
     } else {
       try {
         // Build rich system context from live wallet state
@@ -623,18 +702,16 @@ ${combinedAlerts.filter(a => !a.isAcknowledged).slice(0, 3).map(a => `- [${a.sev
 - Do not make up data. If wallet is not connected, advise the user to connect first.
 - Speak as a professional Web3 financial advisor, not a generic chatbot.`;
 
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              system_instruction: { parts: [{ text: systemPrompt }] },
-              contents: [{ role: 'user', parts: [{ text }] }],
-              generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
-            }),
-          }
-        );
+        // Call our server-side proxy — the API key is injected server-side, never sent to browser
+        const res = await fetch('/api/gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: 'user', parts: [{ text }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+          }),
+        });
 
         if (!res.ok) {
           const err = await res.json();
@@ -734,13 +811,13 @@ ${combinedAlerts.filter(a => !a.isAcknowledged).slice(0, 3).map(a => `- [${a.sev
     ? [
         {
           id: 'w-connected',
-          name: 'Connected Wallet',
-          chain: (web3State.chainId === 1 ? 'Ethereum' : web3State.chainId === 137 ? 'OKX Chain' : 'OKX Chain') as Wallet['chain'],
+          name: `${getChainInfo(web3State.chainId).name} Wallet`,
+          chain: getChainInfo(web3State.chainId).chainType,
           address: `${web3State.address.substring(0, 6)}...${web3State.address.substring(web3State.address.length - 4)}`,
           balanceUsd: web3State.balanceUsd,
           balanceCrypto: web3State.balanceEth,
-          symbol: web3State.chainId === 1 ? 'ETH' : 'OKB',
-          color: '#2563EB',
+          symbol: getChainInfo(web3State.chainId).symbol,
+          color: getChainInfo(web3State.chainId).color,
           performance24h: 0,
           status: 'connected' as const,
         }

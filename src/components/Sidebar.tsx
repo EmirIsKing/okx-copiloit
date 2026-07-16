@@ -51,8 +51,16 @@ export const Sidebar: React.FC = () => {
                 .filter(w => w.status === 'connected')
                 .map(w => (
                   <option key={w.id} value={w.id}>
-                    {w.chain === 'Ethereum' ? '🛡️' : w.chain === 'Bitcoin' ? '🪙' : w.chain === 'Solana' ? '⚡' : w.chain === 'OKX Chain' ? '⬛' : '⚓'}{' '}
-                    {w.name} (${(w.balanceUsd / 1000).toFixed(0)}k)
+                    {w.chain === 'Ethereum' ? '🛡️' :
+                     w.chain === 'Bitcoin' ? '🪙' :
+                     w.chain === 'Solana' ? '⚡' :
+                     w.chain === 'OKX Chain' ? '⬛' :
+                     w.chain === 'Polygon' ? '💜' :
+                     w.chain === 'BNB Chain' ? '🟡' :
+                     w.chain === 'Arbitrum' ? '🟦' :
+                     w.chain === 'Optimism' ? '🔴' :
+                     w.chain === 'Base' ? '🔵' : '⚓'}{' '}
+                    {w.name} (${(w.balanceUsd / 1000).toFixed(1)}k)
                   </option>
                 ))}
             </select>

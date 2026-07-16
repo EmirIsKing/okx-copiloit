@@ -175,7 +175,7 @@ export default function SettingsPage() {
                   style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: '12.5px' }}
                 />
                 <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                  Used to fetch native balances and gas price logs. Falls back to Cloudflare Ethereum RPC if not set.
+                  Used to fetch native balances and gas price logs. Falls back to Alchemy Public RPC if not set.
                 </span>
               </div>
 

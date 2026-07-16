@@ -117,7 +117,7 @@ export const CopilotChat: React.FC = () => {
               <span className="title-icon">✨</span>
               <div className="title-info">
                 <h3>OKX.AI Copilot</h3>
-                <span>Powered by Gemini 2.0 Flash</span>
+                <span>Powered by Gemini 2.5 Flash</span>
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="copilot-close-btn">

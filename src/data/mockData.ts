@@ -1,7 +1,7 @@
 export interface Wallet {
   id: string;
   name: string;
-  chain: 'Ethereum' | 'Bitcoin' | 'Solana' | 'OKX Chain' | 'DeFi';
+  chain: 'Ethereum' | 'Bitcoin' | 'Solana' | 'OKX Chain' | 'Polygon' | 'BNB Chain' | 'Arbitrum' | 'Optimism' | 'Base' | 'DeFi';
   address: string;
   balanceUsd: number;
   balanceCrypto: number;
