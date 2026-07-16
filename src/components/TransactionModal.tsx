@@ -49,6 +49,35 @@ export const TransactionModal: React.FC = () => {
     return walletChain || 'Ethereum';
   };
 
+  const getDynamicExplanation = (tx: Transaction) => {
+    if (tx.walletId === 'w-connected') {
+      return tx.explanation;
+    }
+    
+    if (tx.category === 'Security Risk' || tx.status === 'Flagged') {
+      return `WARNING: The target contract (0xbc9...ff12) matches phishing drainer listings. It is executing direct native asset extraction routines. Spender permissions should be revoked immediately in your wallet extension.`;
+    }
+    
+    if (tx.tags.includes('Duplicate Candidate')) {
+      return `DUPLICATE CANDIDATE: Auditor flagged this outflow of $${tx.amountUsd.toFixed(2)} because it was broadcasted within 3 seconds of an identical transaction. This indicates a browser reload retry or double-click error.`;
+    }
+    
+    if (tx.category === 'Gas Fees' || (tx.gasGwei && tx.gasGwei > 100)) {
+      const gweiVal = tx.gasGwei || 220;
+      return `GAS SPIKE ALERT: You paid a gas fee of $${tx.amountUsd.toFixed(2)} at ${gweiVal} Gwei. This is 450% higher than the network baseline, caused by execution during a smart contract token congestion wave.`;
+    }
+    
+    if (tx.type === 'outflow' && tx.amountUsd > 10000) {
+      return `MAJOR ASSET MOVEMENT: This transfer of $${tx.amountUsd.toLocaleString()} represents a significant capital outflow. Verify the receiver address to avoid on-chain exposure.`;
+    }
+    
+    if (tx.isRecurring) {
+      return `RECURRING NODE CHARGE: Audited monthly subscription of ${tx.amountCrypto} ${tx.cryptoSymbol} ($${tx.amountUsd.toFixed(2)}) for workspace hosting endpoints. Review utilization to avoid idle costs.`;
+    }
+    
+    return tx.explanation;
+  };
+
   return (
     <div className="modal-overlay" onClick={() => setSelectedTransactionId(null)}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
@@ -67,7 +96,7 @@ export const TransactionModal: React.FC = () => {
             ✕
           </button>
         </div>
-
+ 
         {/* Modal Body */}
         <div className="modal-body">
           {/* Main Stats */}
@@ -85,7 +114,7 @@ export const TransactionModal: React.FC = () => {
               </span>
             </div>
           </div>
-
+ 
           {/* Quick Details List */}
           <div className="modal-details-list">
             <div className="modal-detail-row">
@@ -94,7 +123,7 @@ export const TransactionModal: React.FC = () => {
             </div>
             <div className="modal-detail-row">
               <span className="row-label">Timestamp</span>
-              <span className="row-value">{new Date(transaction.timestamp).toLocaleString()}</span>
+              <span className="row-value" suppressHydrationWarning>{new Date(transaction.timestamp).toLocaleString()}</span>
             </div>
             <div className="modal-detail-row">
               <span className="row-label">Risk Level</span>
@@ -123,13 +152,13 @@ export const TransactionModal: React.FC = () => {
               </span>
             </div>
           </div>
-
+ 
           {/* Copilot Plain English Audit */}
           <div className="copilot-audit-section">
             <h4 className="audit-section-title">
               <span className="section-icon">✨</span> Copilot Plain-English Explanation
             </h4>
-            <p className="audit-text">{transaction.explanation}</p>
+            <p className="audit-text">{getDynamicExplanation(transaction)}</p>
             
             {transaction.tags.length > 0 && (
               <div className="audit-tags-container">

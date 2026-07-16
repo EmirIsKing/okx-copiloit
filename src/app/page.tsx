@@ -41,7 +41,7 @@ export default function LandingPage() {
         </p>
 
         <div className="hero-ctas">
-          <Link href="/dashboard" className="btn btn-navy" style={{ padding: '12px 28px', fontSize: '15px' }}>
+          <Link href="/dashboard?connect=true" className="btn btn-navy" style={{ padding: '12px 28px', fontSize: '15px' }}>
             Connect OKX Wallet
           </Link>
           <Link href="/dashboard" className="btn btn-outline" style={{ padding: '12px 28px', fontSize: '15px' }}>

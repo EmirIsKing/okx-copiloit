@@ -4,7 +4,7 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function AlertsPage() {
-  const { alerts, transactions, acknowledgeAlert, setSelectedTransactionId } = useApp();
+  const { alerts, transactions, acknowledgeAlert, setSelectedTransactionId, web3State, connectWeb3 } = useApp();
 
   const activeAlerts = alerts.filter(a => !a.isAcknowledged);
   const acknowledgedAlerts = alerts.filter(a => a.isAcknowledged);
@@ -42,6 +42,24 @@ export default function AlertsPage() {
         </div>
       </div>
 
+      {/* Not connected state */}
+      {!web3State.isConnected && alerts.length === 0 && (
+        <div style={{
+          textAlign: 'center', padding: '64px 24px',
+          background: 'linear-gradient(135deg, #FEF2F2 0%, #FFF 100%)',
+          borderRadius: '16px', border: '1px solid #FCA5A5', marginBottom: '24px'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</div>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '10px' }}>No Wallet Connected</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '400px', margin: '0 auto 24px' }}>
+            Connect your wallet to monitor real-time security alerts, gas anomalies, and suspicious transactions.
+          </p>
+          <button onClick={connectWeb3} disabled={web3State.isConnecting} className="btn btn-navy">
+            {web3State.isConnecting ? '⏳ Connecting...' : '⚡ Connect Wallet'}
+          </button>
+        </div>
+      )}
+
       <div className="dashboard-grid">
         {/* Main Column: Active Alerts */}
         <div className="col-8" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -73,7 +91,7 @@ export default function AlertsPage() {
                         <span style={{ fontSize: '24px' }}>{getAlertIcon(alert.type)}</span>
                         <div>
                           <h3 style={{ fontSize: '15px', fontWeight: 700 }}>{alert.title}</h3>
-                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }} suppressHydrationWarning>
                             Detected: {new Date(alert.timestamp).toLocaleString()}
                           </span>
                         </div>
@@ -150,7 +168,7 @@ export default function AlertsPage() {
                         <div style={{ fontWeight: 600, fontSize: '13px', textDecoration: 'line-through' }}>
                           {alert.title}
                         </div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }} suppressHydrationWarning>
                           Audited on {new Date(alert.timestamp).toLocaleDateString()}
                         </span>
                       </div>

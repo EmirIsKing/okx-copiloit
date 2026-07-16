@@ -1,18 +1,68 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useApp } from '../../context/AppContext';
 
 export default function SettingsPage() {
-  const [gasThreshold, setGasThreshold] = useState(80);
-  const [largeTransferLimit, setLargeTransferLimit] = useState(10000);
+  const { settings, updateSettings } = useApp();
+
+  const [gasThreshold, setGasThreshold] = useState(settings.gasThreshold);
+  const [largeTransferLimit, setLargeTransferLimit] = useState(settings.largeTransferLimit);
+  const [alchemyUrl, setAlchemyUrl] = useState(settings.alchemyUrl);
+  const [infuraKey, setInfuraKey] = useState(settings.infuraKey);
+  const [etherscanKey, setEtherscanKey] = useState(settings.etherscanKey);
+  const [geminiKey, setGeminiKey] = useState(settings.geminiKey);
+  const [notifyLargeTransfer, setNotifyLargeTransfer] = useState(settings.notifyLargeTransfer);
+  const [notifyPhishing, setNotifyPhishing] = useState(settings.notifyPhishing);
+  const [notifyDuplicate, setNotifyDuplicate] = useState(settings.notifyDuplicate);
+  const [notifyGasSpike, setNotifyGasSpike] = useState(settings.notifyGasSpike);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Sync state with Context when settings load (from localStorage on client)
+  useEffect(() => {
+    setGasThreshold(settings.gasThreshold);
+    setLargeTransferLimit(settings.largeTransferLimit);
+    setAlchemyUrl(settings.alchemyUrl);
+    setInfuraKey(settings.infuraKey);
+    setEtherscanKey(settings.etherscanKey);
+    setGeminiKey(settings.geminiKey);
+    setNotifyLargeTransfer(settings.notifyLargeTransfer);
+    setNotifyPhishing(settings.notifyPhishing);
+    setNotifyDuplicate(settings.notifyDuplicate);
+    setNotifyGasSpike(settings.notifyGasSpike);
+  }, [settings]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    updateSettings({
+      gasThreshold,
+      largeTransferLimit,
+      alchemyUrl,
+      infuraKey,
+      etherscanKey,
+      geminiKey,
+      notifyLargeTransfer,
+      notifyPhishing,
+      notifyDuplicate,
+      notifyGasSpike,
+    });
     setSaveSuccess(true);
     setTimeout(() => {
       setSaveSuccess(false);
     }, 3000);
+  };
+
+  const handleDiscard = () => {
+    setGasThreshold(settings.gasThreshold);
+    setLargeTransferLimit(settings.largeTransferLimit);
+    setAlchemyUrl(settings.alchemyUrl);
+    setInfuraKey(settings.infuraKey);
+    setEtherscanKey(settings.etherscanKey);
+    setGeminiKey(settings.geminiKey);
+    setNotifyLargeTransfer(settings.notifyLargeTransfer);
+    setNotifyPhishing(settings.notifyPhishing);
+    setNotifyDuplicate(settings.notifyDuplicate);
+    setNotifyGasSpike(settings.notifyGasSpike);
   };
 
   return (
@@ -81,8 +131,8 @@ export default function SettingsPage() {
                   </span>
                   <input
                     type="number"
-                    value={largeTransferLimit}
-                    onChange={(e) => setLargeTransferLimit(parseInt(e.target.value))}
+                    value={largeTransferLimit || ''}
+                    onChange={(e) => setLargeTransferLimit(parseInt(e.target.value) || 0)}
                     className="filter-input"
                     style={{ width: '100%', paddingLeft: '28px' }}
                   />
@@ -100,34 +150,68 @@ export default function SettingsPage() {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600 }}>Alchemy RPC Endpoint URL</label>
+                <label style={{ fontSize: '13px', fontWeight: 600 }}>Etherscan / Block Explorer API Key</label>
+                <input
+                  type="password"
+                  value={etherscanKey}
+                  onChange={(e) => setEtherscanKey(e.target.value)}
+                  placeholder="Enter block explorer API Key for transaction lookup"
+                  className="filter-input"
+                  style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: '12.5px' }}
+                />
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                  Used to index transactions of connected wallets. If empty, the app will request history from Etherscan without key parameters.
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 600 }}>EVM RPC Node URL (e.g. Alchemy, OKX Link, Cloudflare)</label>
                 <input
                   type="text"
+                  value={alchemyUrl}
+                  onChange={(e) => setAlchemyUrl(e.target.value)}
                   placeholder="https://eth-mainnet.g.alchemy.com/v2/your-api-key"
                   className="filter-input"
                   style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: '12.5px' }}
                 />
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                  Used to fetch native balances and gas price logs. Falls back to Cloudflare Ethereum RPC if not set.
+                </span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600 }}>Infura Project API Key</label>
+                <label style={{ fontSize: '13px', fontWeight: 600 }}>Infura Project API Key (Optional)</label>
                 <input
                   type="password"
+                  value={infuraKey}
+                  onChange={(e) => setInfuraKey(e.target.value)}
                   placeholder="••••••••••••••••••••••••••••••••"
                   className="filter-input"
                   style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: '12.5px' }}
                 />
               </div>
+            </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600 }}>Etherscan Web API Key</label>
-                <input
-                  type="password"
-                  placeholder="••••••••••••••••••••••••••••••••"
-                  className="filter-input"
-                  style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: '12.5px' }}
-                />
-              </div>
+            {/* Gemini AI Key */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: 600 }}>
+                🤖 Gemini API Key (AI Copilot)
+              </label>
+              <input
+                type="password"
+                value={geminiKey}
+                onChange={(e) => setGeminiKey(e.target.value)}
+                placeholder="AIza..."
+                className="filter-input"
+                style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: '12.5px' }}
+              />
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                Powers the AI Copilot chat with real intelligence. Get a free key at{' '}
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer"
+                  style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+                  aistudio.google.com
+                </a>.
+              </span>
             </div>
           </div>
         </div>
@@ -140,19 +224,39 @@ export default function SettingsPage() {
             <h3 className="card-title" style={{ marginBottom: '16px' }}>Notification Subscriptions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
               <label style={{ display: 'flex', gap: '10px', alignItems: 'center', cursor: 'pointer' }}>
-                <input type="checkbox" defaultChecked style={{ accentColor: 'var(--bg-dark)' }} />
+                <input
+                  type="checkbox"
+                  checked={notifyLargeTransfer}
+                  onChange={(e) => setNotifyLargeTransfer(e.target.checked)}
+                  style={{ accentColor: 'var(--bg-dark)' }}
+                />
                 <span>Large outbound transaction alerts</span>
               </label>
               <label style={{ display: 'flex', gap: '10px', alignItems: 'center', cursor: 'pointer' }}>
-                <input type="checkbox" defaultChecked style={{ accentColor: 'var(--bg-dark)' }} />
+                <input
+                  type="checkbox"
+                  checked={notifyPhishing}
+                  onChange={(e) => setNotifyPhishing(e.target.checked)}
+                  style={{ accentColor: 'var(--bg-dark)' }}
+                />
                 <span>phishing Drainer threat alarms</span>
               </label>
               <label style={{ display: 'flex', gap: '10px', alignItems: 'center', cursor: 'pointer' }}>
-                <input type="checkbox" defaultChecked style={{ accentColor: 'var(--bg-dark)' }} />
+                <input
+                  type="checkbox"
+                  checked={notifyDuplicate}
+                  onChange={(e) => setNotifyDuplicate(e.target.checked)}
+                  style={{ accentColor: 'var(--bg-dark)' }}
+                />
                 <span>Duplicate contract execution retries</span>
               </label>
               <label style={{ display: 'flex', gap: '10px', alignItems: 'center', cursor: 'pointer' }}>
-                <input type="checkbox" style={{ accentColor: 'var(--bg-dark)' }} />
+                <input
+                  type="checkbox"
+                  checked={notifyGasSpike}
+                  onChange={(e) => setNotifyGasSpike(e.target.checked)}
+                  style={{ accentColor: 'var(--bg-dark)' }}
+                />
                 <span>Gas block utilization warnings</span>
               </label>
             </div>
@@ -182,7 +286,7 @@ export default function SettingsPage() {
             <button type="submit" className="btn btn-navy" style={{ flex: 1 }}>
               Save Configurations
             </button>
-            <button type="button" className="btn btn-outline" style={{ flex: 1 }}>
+            <button type="button" onClick={handleDiscard} className="btn btn-outline" style={{ flex: 1 }}>
               Discard Changes
             </button>
           </div>

@@ -28,6 +28,7 @@ export interface Transaction {
   tags: string[];
   explanation: string;
   recommendedAction?: string;
+  gasGwei?: number;
 }
 
 export interface Alert {
@@ -150,7 +151,8 @@ export const mockTransactions: Transaction[] = [
     riskLevel: 'Medium',
     tags: ['Gas Spike', 'Swap'],
     explanation: 'Gas price paid (220 Gwei) was 450% higher than the 7-day average network gas price. The transaction was submitted during peak Ethereum block utilization.',
-    recommendedAction: 'Use Next-Block Gas estimator or queue non-urgent swaps in the OKX.AI smart scheduler to execute when Gwei drops below 35.'
+    recommendedAction: 'Use Next-Block Gas estimator or queue non-urgent swaps in the OKX.AI smart scheduler to execute when Gwei drops below 35.',
+    gasGwei: 220
   },
   {
     id: 'tx-anomaly-3a',

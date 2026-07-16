@@ -10,7 +10,10 @@ export default function TransactionsPage() {
     filters,
     setFilters,
     resetFilters,
-    setSelectedTransactionId
+    setSelectedTransactionId,
+    web3State,
+    connectWeb3,
+    isLoadingTxs,
   } = useApp();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,16 +239,35 @@ export default function TransactionsPage() {
 
       {/* Ledger Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {filteredTransactions.length === 0 ? (
+        {!web3State.isConnected ? (
+          <div className="empty-state" style={{ padding: '48px' }}>
+            <span className="empty-state-icon">🔗</span>
+            <h3>No Wallet Connected</h3>
+            <p style={{ marginTop: '8px', maxWidth: '360px', margin: '8px auto 16px' }}>
+              Connect your wallet to see your real on-chain transaction history indexed from Etherscan.
+            </p>
+            <button onClick={connectWeb3} disabled={web3State.isConnecting} className="btn btn-navy btn-sm">
+              {web3State.isConnecting ? '⏳ Connecting...' : '⚡ Connect Wallet'}
+            </button>
+          </div>
+        ) : isLoadingTxs ? (
+          <div className="empty-state" style={{ padding: '48px' }}>
+            <span className="empty-state-icon">⏳</span>
+            <h3>Loading Transactions...</h3>
+            <p style={{ marginTop: '8px' }}>Fetching your transaction history from Etherscan.</p>
+          </div>
+        ) : filteredTransactions.length === 0 ? (
           <div className="empty-state">
-            <span className="empty-state-icon">🔍</span>
+            <span className="empty-state-icon">📭</span>
             <h3>No Transactions Found</h3>
             <p style={{ marginTop: '8px', maxWidth: '360px', margin: '8px auto 16px' }}>
-              Your filters might be too restrictive. Try clearing search fields or widening balance parameters.
+              {transactions.length === 0
+                ? 'No transactions were found for your wallet. If you have transactions, add your Etherscan API key in Settings for better results.'
+                : 'Your filters might be too restrictive. Try clearing search fields or widening balance parameters.'}
             </p>
-            <button onClick={resetFilters} className="btn btn-navy btn-sm">
-              Clear All Filters
-            </button>
+            {transactions.length > 0 && (
+              <button onClick={resetFilters} className="btn btn-navy btn-sm">Clear All Filters</button>
+            )}
           </div>
         ) : (
           <div className="table-container">
@@ -267,7 +289,7 @@ export default function TransactionsPage() {
                   return (
                     <tr key={tx.id} onClick={() => setSelectedTransactionId(tx.id)}>
                       <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{tx.hash}</td>
-                      <td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                      <td style={{ fontSize: '13px', color: 'var(--text-secondary)' }} suppressHydrationWarning>
                         {new Date(tx.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                       </td>
                       <td>

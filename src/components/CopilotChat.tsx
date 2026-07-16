@@ -117,7 +117,7 @@ export const CopilotChat: React.FC = () => {
               <span className="title-icon">✨</span>
               <div className="title-info">
                 <h3>OKX.AI Copilot</h3>
-                <span>Real-time blockchain auditor</span>
+                <span>Powered by Gemini 2.0 Flash</span>
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="copilot-close-btn">
@@ -134,13 +134,17 @@ export const CopilotChat: React.FC = () => {
                 </div>
                 <div className="chat-bubble">
                   <div className="chat-bubble-content">
-                    {msg.sender === 'bot' ? (
+                    {msg.sender === 'bot' && msg.text === '...' ? (
+                      <div className="typing-indicator">
+                        <span /><span /><span />
+                      </div>
+                    ) : msg.sender === 'bot' ? (
                       <div className="parsed-content">{renderMessageText(msg.text)}</div>
                     ) : (
                       <p>{msg.text}</p>
                     )}
                   </div>
-                  <span className="chat-timestamp">
+                  <span className="chat-timestamp" suppressHydrationWarning>
                     {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
